@@ -10,7 +10,10 @@ def client():
     s.connect((host, port))
 
     msg = raw_input()
-    while msg != "quit":
+    while True:
+        if msg == "QUIT":
+            s.send(msg)
+            break
         s.send(msg)
         data = s.recv(1024)
         print str(data)
