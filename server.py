@@ -1,52 +1,55 @@
 import socket
-import tempfile
-import os
-
-host = '127.0.0.1'
-port = 5000
+import threading
 
 
-def server():
-    s = socket.socket()
-    s.bind((host, port))
+class ThreadedServer(object):
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind((self.host, self.port))
+        self.palindromes = []
 
-    s.listen(1)
-    c, addr = s.accept()
+    def listen(self):
+        self.sock.listen(5)
+        while True:
+            client, address = self.sock.accept()
+            client.settimeout(60)
+            threading.Thread(target=self.listen_to_client, args=(client, address)).start()
 
-    # create palindrome file
-    file("palindromes.txt", 'w')
+    def listen_to_client(self, client, address):
+        print "connection established to %s,%s" % (address[0], address[1])
+        while True:
+            try:
+                data = client.recv(1024)
+                if data:
+                    cmd = data.split(' ')
+                    response = ""
+                    if str(cmd[0]) == "LIST":
+                        for num, line in enumerate(self.palindromes, 1):
+                            response += "%s %s\n" % (num, line)
+                        response = response[:-1]  # remove extra newline
+                    elif str(cmd[0]) == "RETR":
+                        # cmd[1] will be the int of which palindrome to return
+                        pass
+                    elif self.is_palindrome(str(data)):
+                        self.palindromes.append(str(data))
+                        response = str(data) + " is a palindrome"
+                    else:
+                        response = str(data) + " is not a palindrome"
+                    client.send(response)
+                else:
+                    print "closing connection to %s,%s" % (address[0], address[1])
+                    break
+            except Exception:
+                client.close()
+                return False
 
-    while True:
-        with open('palindromes.txt', 'a+') as tmp:
-            data = c.recv(1024)
-            if not data:
-                break
-            rsp = ""
-            cmd = data.split(' ')
-            if str(cmd[0]) == "LIST":
-                lines = tmp.readlines()
-                for num, line in enumerate(lines, 1):
-                    rsp += "%s %s" % (num, line)
-                c.send(rsp[:-1])
-            elif str(cmd[0]) == "RETR":
-                # cmd[1] will be the int of which palindrome to return
-                pass
-            elif str(cmd[0]) == "QUIT":
-                break
-            elif is_palindrome(str(data)):
-                tmp.write(str(data) + "\n")
-                rsp = str(data) + " is a palindrome"
-                c.send(rsp)
-            else:
-                rsp = str(data) + " is not a palindrome"
-                c.send(rsp)
-    c.close()
-    os.remove('palindromes.txt')
-
-
-def is_palindrome(s):
-    return s == s[::-1]
+    @staticmethod
+    def is_palindrome(s):
+        return s == s[::-1]
 
 
 if __name__ == "__main__":
-    server()
+    ThreadedServer('127.0.0.1', 5000).listen()
