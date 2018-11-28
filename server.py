@@ -38,6 +38,11 @@ class ThreadedServer(object):
                             response = str(self.palindromes[int(cmd[1])-1])
                         else:
                             response = "palindrome %s does not exist" % str(cmd[1])
+                    elif str(cmd[0]) == "TOP":
+                        if self.palindromes:
+                            response = "%s" % self.palindromes[-1]
+                        else:
+                            response = "palindrome list is empty"
                     elif str(cmd[0]) == "DELE":
                         if int(cmd[1]) - 1 < len(self.palindromes) and not int(cmd[1]) <= 0:
                             del self.palindromes[int(cmd[1])-1]
