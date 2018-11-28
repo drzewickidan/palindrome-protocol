@@ -1,6 +1,7 @@
 import socket
 import sys
 
+
 host = '127.0.0.1'
 port = 5000
 
@@ -9,7 +10,7 @@ def client():
     s = socket.socket()
     s.connect((host, port))
 
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 2:
         # non-persistent connection
         if sys.argv[1] == "-np" or sys.argv[1] == "--non-persistent":
             msg = raw_input()
@@ -19,6 +20,10 @@ def client():
                 print str(data)
             s.send("QUIT")
             s.close()
+        else:
+            raise Exception("unrecognized argument")
+    elif len(sys.argv) > 2:
+        raise Exception("too many arguments")
     else:
         # default: persistent connection
         msg = raw_input()
