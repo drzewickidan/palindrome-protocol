@@ -36,6 +36,12 @@ class ThreadedServer(object):
                         # cmd[1] will be the int of which palindrome to return
                         pass
                     elif str(cmd[0]) == "DELE":
+                        if str(cmd[1]) == "ALL":
+                            self.palindromes = []
+                            response = "Deleted all Palindromes"
+                        else:
+                            del self.palindromes[int(cmd[1])-1]
+                            response = "Deleted #%s" % str(cmd[1])
                         pass
                     elif self.is_palindrome(str(data)):
                         self.palindromes.append(str(data))
