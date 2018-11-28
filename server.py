@@ -64,14 +64,20 @@ class ThreadedServer(object):
                         else:
                             response = str(cmd[1]) + " is not a palindrome"
                     elif str(cmd[0]) == "QUIT":
-                        print "closing connection to %s,%s" % (address[0], address[1])
-                        break
+                        self.close_client(client, address)
+                        return False
                     else:
                         response = "unrecognized command"
                     client.send(response)
-            except Exception:
-                client.close()
+            except Exception as e:
+                self.close_client(client, address)
+                print e
                 return False
+
+    @staticmethod
+    def close_client(client, address):
+        print "closing connection to %s,%s" % (address[0], address[1])
+        client.close()
 
     @staticmethod
     def is_palindrome(s):
