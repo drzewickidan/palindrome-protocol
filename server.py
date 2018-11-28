@@ -25,24 +25,29 @@ class ThreadedServer(object):
                 data = client.recv(1024)
                 if data:
                     cmd = data.split(' ')
-                    response = ""
                     if str(cmd[0]) == "LIST":
-                        for num, line in enumerate(self.palindromes, 1):
-                            response += "%s %s\n" % (num, line)
-                        response = response[:-1]  # remove extra newline
+                        if self.palindromes:
+                            response = ""
+                            for num, line in enumerate(self.palindromes, 1):
+                                response += "%s %s\n" % (num, line)
+                            response = response[:-1]  # remove extra newline
+                        else:
+                            response = "palindrome list is empty"
                     elif str(cmd[0]) == "RETR":
-                        response = str(self.palindromes[int(cmd[1])-1])
-                        #print self.palindromes[int(cmd[1])]
-                        # cmd[1] will be the int of which palindrome to return
-                        pass
+                        if int(cmd[1]) - 1 < len(self.palindromes) and not int(cmd[1]) <= 0:
+                            response = str(self.palindromes[int(cmd[1])-1])
+                        else:
+                            response = "palindrome %s does not exist" % str(cmd[1])
                     elif str(cmd[0]) == "DELE":
                         if str(cmd[1]) == "ALL":
                             self.palindromes = []
-                            response = "Deleted all Palindromes"
+                            response = "deleted all palindromes"
                         else:
-                            del self.palindromes[int(cmd[1])-1]
-                            response = "Deleted #%s" % str(cmd[1])
-                        pass
+                            if int(cmd[1]) - 1 < len(self.palindromes) and not int(cmd[1]) <= 0:
+                                del self.palindromes[int(cmd[1])-1]
+                                response = "deleted palindrome %s" % str(cmd[1])
+                            else:
+                                response = "palindrome %s does not exist" % str(cmd[1])
                     elif self.is_palindrome(str(data)):
                         self.palindromes.append(str(data))
                         response = str(data) + " is a palindrome"
