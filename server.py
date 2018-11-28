@@ -39,24 +39,31 @@ class ThreadedServer(object):
                         else:
                             response = "palindrome %s does not exist" % str(cmd[1])
                     elif str(cmd[0]) == "DELE":
-                        if str(cmd[1]) == "ALL":
-                            self.palindromes = []
-                            response = "deleted all palindromes"
+                        if int(cmd[1]) - 1 < len(self.palindromes) and not int(cmd[1]) <= 0:
+                            del self.palindromes[int(cmd[1])-1]
+                            response = "deleted palindrome %s" % str(cmd[1])
                         else:
-                            if int(cmd[1]) - 1 < len(self.palindromes) and not int(cmd[1]) <= 0:
-                                del self.palindromes[int(cmd[1])-1]
-                                response = "deleted palindrome %s" % str(cmd[1])
-                            else:
-                                response = "palindrome %s does not exist" % str(cmd[1])
-                    elif self.is_palindrome(str(data)):
-                        self.palindromes.append(str(data))
-                        response = str(data) + " is a palindrome"
+                            response = "palindrome %s does not exist" % str(cmd[1])
+                    elif str(cmd[0]) == "RSET":
+                        self.palindromes = []
+                        response = "reset list of palindromes"
+                    elif str(cmd[0]) == "STAT":
+                        if len(self.palindromes) == 1:
+                            response = "1 palindrome found"
+                        else:
+                            response = "%s palindromes found" % len(self.palindromes)
+                    elif str(cmd[0]) == "VRFY":
+                        if self.is_palindrome(str(cmd[1])):
+                            self.palindromes.append(str(cmd[1]))
+                            response = str(cmd[1]) + " is a palindrome"
+                        else:
+                            response = str(cmd[1]) + " is not a palindrome"
+                    elif str(cmd[0]) == "QUIT":
+                        print "closing connection to %s,%s" % (address[0], address[1])
+                        break
                     else:
-                        response = str(data) + " is not a palindrome"
+                        response = "unrecognized command"
                     client.send(response)
-                else:
-                    print "closing connection to %s,%s" % (address[0], address[1])
-                    break
             except Exception:
                 client.close()
                 return False
