@@ -31,7 +31,11 @@ class ThreadedServer(object):
                             response += "%s %s\n" % (num, line)
                         response = response[:-1]  # remove extra newline
                     elif str(cmd[0]) == "RETR":
+                        response = str(self.palindromes[int(cmd[1])-1])
+                        #print self.palindromes[int(cmd[1])]
                         # cmd[1] will be the int of which palindrome to return
+                        pass
+                    elif str(cmd[0]) == "DELE":
                         pass
                     elif self.is_palindrome(str(data)):
                         self.palindromes.append(str(data))
