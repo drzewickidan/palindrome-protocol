@@ -58,11 +58,14 @@ class ThreadedServer(object):
                         else:
                             response = "%s palindromes found" % len(self.palindromes)
                     elif str(cmd[0]) == "VRFY":
-                        if self.is_palindrome(str(cmd[1])):
-                            self.palindromes.append(str(cmd[1]))
-                            response = str(cmd[1]) + " is a palindrome"
-                        else:
-                            response = str(cmd[1]) + " is not a palindrome"
+                        response = ""
+                        for i in range(1, len(cmd)):
+                            if self.is_palindrome(str(cmd[i])):
+                                self.palindromes.append(str(cmd[i]))
+                                response += str(cmd[i]) + " is a palindrome\n"
+                            else:
+                                response += str(cmd[i]) + " is not a palindrome\n"
+                        response = response[:-1]  # remove extra newline
                     elif str(cmd[0]) == "QUIT":
                         self.close_client(client, address)
                         return False
