@@ -11,13 +11,13 @@ def client():
     s = socket.socket()
     s.connect((host, port))
     
-    #check amount of amount of arguments
+    #check amount of arguments
     if len(sys.argv) == 2:
         # non-persistent connection
         if sys.argv[1] == "-np" or sys.argv[1] == "--non-persistent":
-            #use user input as msg
+            #save user input as msg
             msg = raw_input()
-            #check if QUIT was input
+            #check if QUIT command was used
             if not msg == "QUIT":
                 #send msg
                 s.send(msg)
