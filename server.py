@@ -33,10 +33,7 @@ class ThreadedServer(object):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((self.host, self.port))
-        self.palindromes = []
-        with open('palindromes.txt', 'r') as f:
-            reader = csv.reader(f, delimiter='\n')
-            self.palindromes = list(reader)
+        self.palindromes = self.read_palindromes()
 
     def listen(self):
         """Listen for new clients trying to connect and spawn a thread to listen to their commands"""
@@ -47,6 +44,7 @@ class ThreadedServer(object):
 
     def listen_to_client(self, client, address):
         """Listen for commands from a particular client
+
         :param client: socket object usable to send and receive data on the connection
         :param address: address bound to the socket on the other end of the connection
 
@@ -138,9 +136,14 @@ class ThreadedServer(object):
 
     @staticmethod
     def write_palindrome(p):
-        f = open('palindromes.txt', 'a')
-        f.write(p+'\n')
-        f.close()
+        with open('palindromes.txt', 'a') as f:
+            f.write(p+'\n')
+
+    @staticmethod
+    def read_palindromes():
+        with open('palindromes.txt', 'r') as f:
+            reader = csv.reader(f, delimiter='\n')
+            return list(reader)
 
 if __name__ == "__main__":
     # executed when server module is run directly
