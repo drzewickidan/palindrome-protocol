@@ -1,5 +1,6 @@
 import socket
 import threading
+import csv
 
 
 class ThreadedServer(object):
@@ -33,6 +34,9 @@ class ThreadedServer(object):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((self.host, self.port))
         self.palindromes = []
+        with open('palindromes.txt', 'r') as f:
+            reader = csv.reader(f, delimiter='\n')
+            self.palindromes = list(reader)
 
     def listen(self):
         """Listen for new clients trying to connect and spawn a thread to listen to their commands"""
@@ -102,6 +106,7 @@ class ThreadedServer(object):
                         for i in range(1, len(cmd)):
                             if self.is_palindrome(str(cmd[i])):
                                 self.palindromes.append(str(cmd[i]))
+                                self.write_palindrome(str(cmd[i]))
                                 response += str(cmd[i]) + " is a palindrome\n"
                             else:
                                 response += str(cmd[i]) + " is not a palindrome\n"
@@ -131,6 +136,11 @@ class ThreadedServer(object):
         """Return whether a string is a palindrome or not"""
         return s == s[::-1]
 
+    @staticmethod
+    def write_palindrome(p):
+        f = open('palindromes.txt', 'a')
+        f.write(p+'\n')
+        f.close()
 
 if __name__ == "__main__":
     # executed when server module is run directly
