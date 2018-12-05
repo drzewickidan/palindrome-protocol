@@ -1,6 +1,6 @@
 import socket
 import threading
-import csv
+import os.path
 
 
 class ThreadedServer(object):
@@ -33,7 +33,7 @@ class ThreadedServer(object):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((self.host, self.port))
-        self.palindromes = self.read_palindromes()
+        self.palindromes = self.load_palindromes()
 
     def listen(self):
         """Listen for new clients trying to connect and spawn a thread to listen to their commands"""
@@ -84,12 +84,14 @@ class ThreadedServer(object):
                     elif str(cmd[0]) == "DELE":
                         if int(cmd[1]) - 1 < len(self.palindromes) and not int(cmd[1]) <= 0:
                             del self.palindromes[int(cmd[1])-1]
+                            self.modify_palindromes(int(cmd[1])-1)
                             response = "deleted palindrome %s" % str(cmd[1])
                         else:
                             response = "palindrome %s does not exist" % str(cmd[1])
                     # clear list of palindromes when RSET command received
                     elif str(cmd[0]) == "RSET":
                         self.palindromes = []
+                        self.reset_palindromes()
                         response = "reset list of palindromes"
                     # indicate number of palindromes found when STAT command received
                     elif str(cmd[0]) == "STAT":
@@ -136,16 +138,34 @@ class ThreadedServer(object):
 
     @staticmethod
     def write_palindrome(p):
-        with open('palindromes.txt', 'a') as f:
+        """Append a palindrome to palindrome data file"""
+        with open('palindromes.dat', 'a') as f:
             f.write(p+'\n')
 
     @staticmethod
-    def read_palindromes():
-        with open('palindromes.txt', 'r') as f:
-            reader = csv.reader(f, delimiter='\n')
-            return list(reader)
+    def load_palindromes():
+        """Load palindrome data file to a list"""
+        return [line.rstrip() for line in open('palindromes.dat')]
+
+    @staticmethod
+    def modify_palindromes(index):
+        """Remove a palindrome via it's index from palindrome data file"""
+        with open('palindromes.dat', 'r') as infile:
+            lines = infile.readlines()
+
+        with open('palindromes.dat', 'w') as outfile:
+            for pos, line in enumerate(lines):
+                if pos != index:
+                    outfile.write(line)
+
+    @staticmethod
+    def reset_palindromes():
+        """Reset palindrome data file"""
+        file('palindromes.dat', 'w')
 
 if __name__ == "__main__":
     # executed when server module is run directly
     # for ECEC531, this is hardcoded to run on localhost:5000
+    if not os.path.isfile('palindromes.dat'):
+        file('palindromes.dat', 'w')
     ThreadedServer('127.0.0.1', 5000).listen()
